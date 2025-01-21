@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_USER: codrr
       POSTGRES_PASSWORD: secret123
-      POSTGRES_DB: codrrdn
+      POSTGRES_DB: codrrdb
     volumes:
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports: 
