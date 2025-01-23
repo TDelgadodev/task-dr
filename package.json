@@ -5,6 +5,7 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "type": "commonjs",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -17,13 +18,18 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "orm:init": "npx typeorm-ts-node-commonjs -d ./src/config/data.source.ts",
+    "m:gen": "set NODE_ENV=develop&& npm run orm:init migration:generate",
+    "m:run": "set NODE_ENV=develop&& npm run orm:init migration:run"
   },
   "dependencies": {
-    "@nestjs/common": "^10.0.0",
+    "@nestjs/common": "^11.0.4",
     "@nestjs/config": "^3.3.0",
-    "@nestjs/core": "^10.0.0",
+    "@nestjs/core": "^11.0.4",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/swagger": "^11.0.2",
+    "class-validator": "^0.14.1",
     "morgan": "^1.10.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
@@ -41,6 +47,7 @@
     "@types/supertest": "^6.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
+    "cross-env": "^7.0.3",
     "eslint": "^8.0.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
@@ -53,7 +60,7 @@
     "ts-loader": "^9.4.3",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
-    "typeorm": "^0.3.20",
+    "typeorm": "^0.3.11",
     "typescript": "^5.1.3"
   },
   "jest": {
