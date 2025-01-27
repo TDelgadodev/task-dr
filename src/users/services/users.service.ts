@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, UpdateResult, DeleteResult } from 'typeorm';
 import { UsersEntity } from '../entities/users.entity';
-import { DeleteResult, Repository, UpdateResult } from 'typeorm';
 import { UserDTO, UserUpdateDTO } from '../dto/user.dto';
+import { ErrorManager } from 'src/utils/error-manager';
 
 @Injectable()
 export class UsersService {
@@ -15,57 +16,77 @@ export class UsersService {
     try {
       return await this.usersRepository.save(body);
     } catch (error) {
-      throw new Error(error);
+      throw ErrorManager.createSignatureError(error.message);
     }
   }
 
-  public async findUsers(): Promise<UsersEntity[]> {
+  public async findAllUsers(): Promise<UsersEntity[]> {
     try {
-      return await this.usersRepository.find();
+      const users = await this.usersRepository.find();
+      if (users.length === 0) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: 'No users found',
+        });
+      }
+      return users;
     } catch (error) {
-      throw new Error(error);
+      throw ErrorManager.createSignatureError(error.message);
     }
   }
 
   public async findUserById(id: string): Promise<UsersEntity> {
     try {
-      return await this.usersRepository
-        .createQueryBuilder('user')
-        .where({ id })
-        .getOne();
+      const user = await this.usersRepository.findOne({ where: { id } });
+      if (!user) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: 'User not found',
+        });
+      }
+      return user;
     } catch (error) {
-      throw new Error(error);
+      throw ErrorManager.createSignatureError(error.message);
     }
   }
 
   public async updateUser(
     body: UserUpdateDTO,
     id: string,
-  ): Promise<UsersEntity> | undefined {
+  ): Promise<UsersEntity | undefined> {
     try {
       const user: UpdateResult = await this.usersRepository.update(id, body);
       if (user.affected === 0) {
-        return undefined;
+        throw new ErrorManager({
+          type: 'BAD_REQUEST',
+          message: 'User not found',
+        });
       }
       return await this.findUserById(id);
     } catch (error) {
-      throw new Error(error);
+      throw ErrorManager.createSignatureError(error.message);
     }
   }
 
-  public async deleteUser(id: string): Promise<UsersEntity> | undefined {
+  public async deleteUser(id: string): Promise<UsersEntity | undefined> {
     try {
-      const user: DeleteResult = await this.usersRepository.delete(id);
-      if (user.affected === 0) {
-        return undefined;
+      const userToDelete = await this.findUserById(id);
+      if (!userToDelete) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: 'User not found',
+        });
       }
-      return await this.findUserById(id);
+      const deleteResult: DeleteResult = await this.usersRepository.delete(id);
+      if (deleteResult.affected === 0) {
+        throw new ErrorManager({
+          type: 'BAD_REQUEST',
+          message: 'User not found',
+        });
+      }
+      return userToDelete;
     } catch (error) {
-      throw new Error(error);
+      throw ErrorManager.createSignatureError(error.message);
     }
-  }
-
-  getHello(): string {
-    return 'Hello World!';
   }
 }
